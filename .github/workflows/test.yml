@@ -21,4 +21,9 @@ jobs:
       with:
         python-version: "3.9.12"
     - name: Python Unit Test
+      run: ls
+    - name: Python Unit Test
+      run: pwd
+    - name: Python Unit Test
       run: python webapp/unitestuser.py
+ 
