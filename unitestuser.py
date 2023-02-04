@@ -6,7 +6,7 @@ class BasicTest(unittest.TestCase):
 
     def test(self):
 
-        if(os.path.exists('user.py')):
+        if(os.path.exists('user.py123')):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
