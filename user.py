@@ -31,8 +31,8 @@ def create_user():
 		js = request.json
 		username = js['username']
 		password = js['password']
-		fname = js['fname']
-		lname = js['lname']
+		fname = js['first_name']
+		lname = js['last_name']
 
 		# validate the received values
 	
@@ -72,6 +72,97 @@ def create_user():
 		result.status = 400
 		return result
 
+
+# @app.route('/v1/user', methods=['POST'])
+# def create_user():
+
+# 	#dbcon =None
+# 	csr =None
+
+# 	try:
+
+# 		js = request.json
+# 		username =js['username']
+# 		password =js['password']
+# 		fname =js['fname']
+# 		lname=js['lname']
+
+# 		# datetime object containing current date and time
+# 		now = datetime.now()
+
+# 		# dd/mm/YY H:M:S
+# 		u_crdate = now.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
+
+
+# 		# validate the received values
+# 		if fname and lname and username and password and request.method == 'POST':
+# 			if not re.match(r"[^@]+@[^@]+\.[^@]+", username):
+# 				return jsonify({'error': 'Invalid email address'}),400
+
+# 			# bcrypt password
+# 			bytes = password.encode('utf-8')
+# 			# salt = bcrypt.gensalt()
+# 			hash_pwd = bcrypt.hashpw(bytes, s)
+
+# 			# insert data into db
+# 			query = "INSERT INTO tbl_create_user(username, u_password, u_fname, u_lname,acc_created,acc_updated) VALUES(%s,%s,%s,%s,%s,%s)"
+# 			field = (username,hash_pwd,fname,lname,u_crdate,u_crdate)
+
+# 			# # connect with mysql
+# 			# #dbcon = mysql.connect()
+# 			csr = mysql.cursor()
+
+# 			# # execute the query
+# 			csr.execute(query, field)
+
+# 			mysql.commit()
+
+# 			# rows = csr.fetchone()
+# 			csr.close()	
+
+# 			csr = mysql.cursor()
+
+# 			query = "SELECT u_id,username,u_fname,u_lname,acc_created,acc_updated from tbl_create_user where username= %s"
+# 			field = (username,)
+# 			csr.execute(query, field)
+# 			keys = [column[0] for column in csr.description]
+# 			data=csr.fetchone()
+# 			result = dict(zip(keys, data))
+# 			result = jsonify(result)
+
+# 			# result = jsonify('User added successfully!',201)
+# 			result.status_code = 201
+
+# 			return result
+# 		else:
+# 			#dbcon = mysql.connect()
+# 			csr = mysql.cursor()
+# 			return not_found()
+# 	# except mysql.connector.Error:
+# 	# 	print("error duplicacy")
+# 	except Exception as e:
+# 		# print(e)
+# 		db_error=True		
+# 		# dbcon = mysql.connect()
+# 		# csr = dbcon.cursor()
+
+# 	finally:
+# 		#dbcon = mysql.connect()
+# 		csr = mysql.cursor()
+# 		csr.close() 
+# 		#dbcon.close()
+
+# 	if db_error:
+# 		# print("duplicate error")
+# 		result=jsonify(Error="BAD_REQUEST", Code = 400  )	
+# 		result.status=400
+
+# 		# return jsonify((400, 'Record Not Found')) 
+# 		# result.status_code="400 BAD_REQUEST"
+# 		return result
+
+# @app.route('/v1/user',methods=['GET'])
+# def users():
 
 @app.route('/v1/user/<int:Id>')
 def user(Id):
@@ -171,8 +262,8 @@ def update_user(Id):
 		js = request.json
 		user_name = js['username']
 		u_password = js['password']
-		fname = js['fname']
-		lname = js['lname']
+		fname = js['first_name']
+		lname = js['last_name']
 	except Exception:
 		db_error = True
 	if db_error:
@@ -290,11 +381,12 @@ def upload_product():
 	# 	resp.status_code=400
 	# 	return resp
 	data = request.json
-	product_name = data.get("p_name")
+	product_name = data.get("name")
 	product_description = data.get("description")
 	product_sku = data.get("sku")
 	product_manufacturer = data.get("manufacturer")
-	product_quantity = data.get("product_quantity")
+	product_quantity = data.get("quantity")
+	int(product_quantity)
 	csr = None
 	
 
@@ -485,11 +577,11 @@ def delete_product(P_Id):
 def update_product(P_Id):
 	csr = None
 	data = request.json
-	product_name = data.get("p_name")
+	product_name = data.get("name")
 	product_description = data.get("description")	
 	product_sku = data.get("sku")
 	product_manufacturer = data.get("manufacturer")
-	product_quantity = data.get("product_quantity")
+	product_quantity = data.get("quantity")
 	
 	
 	
@@ -577,7 +669,7 @@ def update_product(P_Id):
 def update_product_patch(P_Id):
 	csr = None
 	data = request.json
-	product_name = data.get("p_name")
+	product_name = data.get("name")
 	if product_name is None:
 		csr = mysql.cursor()
 		query = "SELECT P_name FROM tbl_product WHERE p_id = %s"
@@ -617,7 +709,7 @@ def update_product_patch(P_Id):
 		csr.close()
 
 
-	product_quantity = data.get("product_quantity")
+	product_quantity = data.get("quantity")
 	if product_quantity is None:
 		csr = mysql.cursor()
 		query = "SELECT  Quantity FROM tbl_product WHERE p_id = %s"
