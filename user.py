@@ -271,7 +271,7 @@ def update_user(Id):
 		result.status_code = 400
 		return result
 
-	expected_keys = ["username", "password", "fname", "lname"]
+	expected_keys = ["username", "password", "first_name", "last_name"]
 	extra_keys = set(js.keys()) - set(expected_keys)
 
 	if extra_keys:
@@ -850,6 +850,6 @@ def pwd(password):
 
 
 if __name__ == "__main__":
-	app.run()
+	app.run(host="0.0.0.0",port=5000)
 
 #((str(hash_pwd)[2:].replace('\'', '') == db_pwd) and (auth_uname == db_uname))
