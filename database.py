@@ -7,12 +7,19 @@ def getDbConnection():
 
 
     mydb = mysql.connector.connect(
-    host='127.0.0.1',
-    user="new_user",
-    password="password"
+    host="localhost",
+    user="root",
+    password="United@19"
     )
 
     mycursor = mydb.cursor()
+    mycursor.execute("SHOW DATABASES")
+    databases = mycursor.fetchall()
+    database_names = [database[0] for database in databases]
+
+    if 'clouddb' in database_names:
+        mycursor.execute("DROP DATABASE clouddb")
+
 
     mycursor.execute("Create Database If NOt EXISTS clouddb")
     mycursor.close()
@@ -20,8 +27,8 @@ def getDbConnection():
 def createTable():
     mydb = mysql.connector.connect(
     host="localhost",
-    user="new_user",
-    password="password",
+    user="root",
+    password="United@19",
     database="clouddb",
     auth_plugin='mysql_native_password'
     )
@@ -32,8 +39,8 @@ def createTable():
 def createTable_product():
     mydb = mysql.connector.connect(
     host="localhost",
-    user="new_user",
-    password="password",
+    user="root",
+    password="United@19",
     database="clouddb"
     )
     mycursor = mydb.cursor()
@@ -45,5 +52,5 @@ def createTable_product():
 getDbConnection()
 createTable()
 createTable_product()
-SqlAlchemy = mysql.connector.connect(host="localhost",user="new_user",password="password",database="clouddb")
+SqlAlchemy = mysql.connector.connect(host="localhost",user="root",password="United@19",database="clouddb")
 
