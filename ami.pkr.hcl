@@ -55,23 +55,24 @@ variable "device_name" {
   description = "EBS device name"
   default     = "/dev/sda1"
 }
-variable "dev_id" {
+variable "ak" {
   type        = string
-  description = "AWS dev account ID"
-  default     = "187652252344"
+  description = "AWS access key"
+  default     = "AKIASXMHSEK4DU7J4JD4"
 }
-variable "demo_id" {
+variable "sk" {
   type        = string
-  description = "AWS dev account ID"
-  default     = "187652252344"
+  description = "AWS security_key"
+  default     = "q8albyM3pkr3L2oQLw6lmyaTRHQK67eQCieOpuJF"
 }
 
 source "amazon-ebs" "my-ami" {
   region          = "${var.aws_region}"
   ami_name        = "cloud_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_description = "AMI for cloud assignments"
-  ami_users = ["${var.dev_id}", # dev account ID # prod account ID
-  ]
+  access_key = "${var.ak}"
+  secret_key = "${var.sk}" # dev account ID # prod account ID
+  
 
   ami_regions = [
     "us-east-1",
