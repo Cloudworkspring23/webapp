@@ -1,15 +1,23 @@
-Steps to follow:
-1) Install python and MySQL if you don't have it installed on your local machine. 
-2) Clone all the files from organisation and create a venv file and run requirements.txt 
+Building Rest API using Python. MySQL and Flask.
 
-python -m venv .venv\
-source .venv/bin/activate\
-pip install --upgrade pip\
-pip install -r requirements.txt
+This is a python web application for storing the user information into MySQL database.
+
+User input is taken from Postman
+
+User passwords are encrypted with BCrypt hashing and salt in the database
+
+Authentication is done using basic auth
+
+This API implements GET,POST,PUT and Delete methods
+
+The infrasturucture files ami.pkr.hcl is used to create custom AMI with all the dependency required to build and start the web application. The AMI file is automatically build in the GitHub action workflows.
+
+Clone the AWS INFRA repository and run the Terraform Command:
+1. Terraform init
+2. Terraform fmt
+3. Terraform Plan -var-file="demo.tfvars"
+4. Terraform Apply -var-file="demo.tfvars"
 
 
-3)  Run the below command to build and execute your python file
-- python Database.py
-- python User.py
-1) After running you'll get the webapplication link
-2) Call the API using Postman
+Call the API using Postman
+User input is taken from Postman
