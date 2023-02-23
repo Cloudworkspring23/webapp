@@ -33,7 +33,7 @@ def createTable():
     auth_plugin='mysql_native_password'
     )
     mycursor = mydb.cursor()
-    mycursor.execute("CREATE TABLE IF NOT EXISTS tbl_Create_User(u_id bigint Auto_Increment Primary Key,username varchar(45) Unique, u_password varchar(255) DEFAULT NULL,u_fname char(45)  DEFAULT NULL,u_lname char(45)  DEFAULT NULL,acc_created varchar(45)  DEFAULT NULL,acc_updated varchar(45) DEFAULT NULL) ENGINE=InnoDB AUTO_INCREMENT=1")
+    mycursor.execute("CREATE TABLE IF NOT EXISTS tbl_create_user(u_id bigint Auto_Increment Primary Key,username varchar(45) Unique, u_password varchar(255) DEFAULT NULL,u_fname char(45)  DEFAULT NULL,u_lname char(45)  DEFAULT NULL,acc_created varchar(45)  DEFAULT NULL,acc_updated varchar(45) DEFAULT NULL) ENGINE=InnoDB AUTO_INCREMENT=1")
     mycursor.close()
 
 def createTable_product():
