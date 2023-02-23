@@ -1,5 +1,3 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
 name: Packer validate CI
 
@@ -45,4 +43,4 @@ jobs:
 
       - name: Run `packer validate`
         id: validate
-        run: "packer validate -var 'ak=${{ secrets.AWS_ACCESS_KEY_ID }}' -var 'sk=${{ secrets.AWS_SECRET_ACCESS_KEY }}' ami.pkr.hcl"
+        run: "packer validate -var 'ak=${{ secrets.AWS_ACCESS_KEY_ID }}' -var 'sk=${{ secrets.AWS_SECRET_ACCESS_KEY }}' -var 'aws_region =${{vars.AWS_REGION}}' -var 'source_ami =${{vars.SOURCE_AMI}}' -var 'subnet_id =${{vars.SUBNET_ID}}' ami.pkr.hcl"
