@@ -43,4 +43,4 @@ jobs:
 
       - name: Run `packer validate`
         id: validate
-        run: "packer validate -var 'ak=${{ secrets.AWS_ACCESS_KEY_ID }}' -var 'sk=${{ secrets.AWS_SECRET_ACCESS_KEY }}' -var 'aws_region =${{vars.AWS_REGION}}' -var 'source_ami =${{vars.SOURCE_AMI}}' -var 'subnet_id =${{vars.SUBNET_ID}}' ami.pkr.hcl"
+        run: "packer validate -var 'ak=${{ secrets.AWS_ACCESS_KEY_ID }}' -var 'sk=${{ secrets.AWS_SECRET_ACCESS_KEY }}' -var 'aws_region=${{ vars.AWS_REGION }}' -var 'source_ami=${{ vars.SOURCE_AMI }}' -var 'subnet_id=${{ vars.SUBNET_ID }}' ami.pkr.hcl"
