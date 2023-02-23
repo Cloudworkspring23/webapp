@@ -70,7 +70,11 @@ variable "dev_id" {
   description = "AWS prod account ID"
   default     = "187652252344"
 }
-
+variable "demo_id" {
+  type        = string
+  description = "AWS prod account ID"
+  default     = "592478192396"
+}
 source "amazon-ebs" "my-ami" {
   region          = "${var.aws_region}"
   ami_name        = "cloud_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
@@ -79,7 +83,7 @@ source "amazon-ebs" "my-ami" {
   secret_key = "${var.sk}" # dev account ID # prod account ID
   ami_users = [
     "${var.dev_id}",  # dev account ID
-     # prod account ID
+    "${var.demo_id}", # demo account ID
   ]
 
   ami_regions = [
