@@ -65,6 +65,11 @@ variable "sk" {
   description = "AWS security_key"
   default     = "q8albyM3pkr3L2oQLw6lmyaTRHQK67eQCieOpuJF"
 }
+variable "dev_id" {
+  type        = string
+  description = "AWS prod account ID"
+  default     = "187652252344"
+}
 
 source "amazon-ebs" "my-ami" {
   region          = "${var.aws_region}"
@@ -72,7 +77,10 @@ source "amazon-ebs" "my-ami" {
   ami_description = "AMI for cloud assignments"
   access_key = "${var.ak}"
   secret_key = "${var.sk}" # dev account ID # prod account ID
-  
+  ami_users = [
+    "${var.dev_id}",  # dev account ID
+     # prod account ID
+  ]
 
   ami_regions = [
     "us-east-1",
