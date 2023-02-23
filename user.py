@@ -1,7 +1,7 @@
 import base64
 from distutils.log import error
 import email
-import errno
+#import errno
 from http.client import BAD_REQUEST
 from multiprocessing.connection import wait
 from flask import abort, request, make_response
