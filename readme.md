@@ -1,4 +1,4 @@
-Building Rest API using Python. MySQL and Flask.
+Building Rest API using Python. MySQL and Flask
 
 This is a python web application for storing the user information into MySQL database.
 
