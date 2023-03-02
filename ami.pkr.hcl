@@ -79,8 +79,8 @@ source "amazon-ebs" "my-ami" {
   region          = "${var.aws_region}"
   ami_name        = "cloud_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_description = "AMI for cloud assignments"
-  access_key = "${var.ak}"
-  secret_key = "${var.sk}" # dev account ID # prod account ID
+  access_key      = "${var.ak}"
+  secret_key      = "${var.sk}" # dev account ID # prod account ID
   ami_users = [
     "${var.dev_id}",  # dev account ID
     "${var.demo_id}", # demo account ID

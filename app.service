@@ -4,11 +4,11 @@ After=multi-user.target
 Conflicts=getty@tty1.service
 
 [Service]
-Type=simple
 User=ec2-user
 Restart=always
 RestartSec=10
 ExecStart=/usr/bin/python3 user.py
+EnvironmentFile=/home/ec2-user/webapp/.env
 WorkingDirectory=/home/ec2-user/webapp
 StandardInput=tty-force
 StandardOutput=syslog

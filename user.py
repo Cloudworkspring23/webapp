@@ -1,7 +1,7 @@
 import base64
 from distutils.log import error
 import email
-#import errno
+import errno
 from http.client import BAD_REQUEST
 from multiprocessing.connection import wait
 from flask import abort, request, make_response
@@ -11,17 +11,42 @@ from database import SqlAlchemy as mysql
 from flask import jsonify
 import pymysql
 import re
+from werkzeug.utils import secure_filename
+import os
 
 # from werkzeug.security import generate_password_hash
 from datetime import datetime
 
 import bcrypt
 import logging
+from flask import jsonify,request
+from flask import abort, request
+import uuid
+import boto3
+import base64
+import email
+import errno
+import json
+import statsd
+import time
+from dotenv import load_dotenv
+from pathlib import Path
+from http.client import BAD_REQUEST
+import requests
+from multiprocessing.connection import wait
+from datetime import datetime
 
-# logging.basicConfig(level=logging.DEBUG)
+import os
+import bcrypt
+import logging
 
-s = b'$2b$12$5bLd8.tAyVOYX66Y2KLNROtA86OappyUFvMtpSYsMDGnH2z1HNnUO'
-
+s3=boto3.client('s3')
+s =b'$2b$12$5bLd8.tAyVOYX66Y2KLNROtA86OappyUFvMtpSYsMDGnH2z1HNnUO'
+# c = statsd.StatsClient('localhost',8125)
+dotenv_path = Path("/home/ec2-user/webapp/.env")
+load_dotenv(dotenv_path=dotenv_path)
+bucket_name=os.environ.get('AWS_S3_BUCKET_NAME')
+# bucket_name='abdev1997'
 
 @app.route('/v1/user', methods=['POST'])
 def create_user():
@@ -73,96 +98,6 @@ def create_user():
 		return result
 
 
-# @app.route('/v1/user', methods=['POST'])
-# def create_user():
-
-# 	#dbcon =None
-# 	csr =None
-
-# 	try:
-
-# 		js = request.json
-# 		username =js['username']
-# 		password =js['password']
-# 		fname =js['fname']
-# 		lname=js['lname']
-
-# 		# datetime object containing current date and time
-# 		now = datetime.now()
-
-# 		# dd/mm/YY H:M:S
-# 		u_crdate = now.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
-
-
-# 		# validate the received values
-# 		if fname and lname and username and password and request.method == 'POST':
-# 			if not re.match(r"[^@]+@[^@]+\.[^@]+", username):
-# 				return jsonify({'error': 'Invalid email address'}),400
-
-# 			# bcrypt password
-# 			bytes = password.encode('utf-8')
-# 			# salt = bcrypt.gensalt()
-# 			hash_pwd = bcrypt.hashpw(bytes, s)
-
-# 			# insert data into db
-# 			query = "INSERT INTO tbl_create_user(username, u_password, u_fname, u_lname,acc_created,acc_updated) VALUES(%s,%s,%s,%s,%s,%s)"
-# 			field = (username,hash_pwd,fname,lname,u_crdate,u_crdate)
-
-# 			# # connect with mysql
-# 			# #dbcon = mysql.connect()
-# 			csr = mysql.cursor()
-
-# 			# # execute the query
-# 			csr.execute(query, field)
-
-# 			mysql.commit()
-
-# 			# rows = csr.fetchone()
-# 			csr.close()	
-
-# 			csr = mysql.cursor()
-
-# 			query = "SELECT u_id,username,u_fname,u_lname,acc_created,acc_updated from tbl_create_user where username= %s"
-# 			field = (username,)
-# 			csr.execute(query, field)
-# 			keys = [column[0] for column in csr.description]
-# 			data=csr.fetchone()
-# 			result = dict(zip(keys, data))
-# 			result = jsonify(result)
-
-# 			# result = jsonify('User added successfully!',201)
-# 			result.status_code = 201
-
-# 			return result
-# 		else:
-# 			#dbcon = mysql.connect()
-# 			csr = mysql.cursor()
-# 			return not_found()
-# 	# except mysql.connector.Error:
-# 	# 	print("error duplicacy")
-# 	except Exception as e:
-# 		# print(e)
-# 		db_error=True		
-# 		# dbcon = mysql.connect()
-# 		# csr = dbcon.cursor()
-
-# 	finally:
-# 		#dbcon = mysql.connect()
-# 		csr = mysql.cursor()
-# 		csr.close() 
-# 		#dbcon.close()
-
-# 	if db_error:
-# 		# print("duplicate error")
-# 		result=jsonify(Error="BAD_REQUEST", Code = 400  )	
-# 		result.status=400
-
-# 		# return jsonify((400, 'Record Not Found')) 
-# 		# result.status_code="400 BAD_REQUEST"
-# 		return result
-
-# @app.route('/v1/user',methods=['GET'])
-# def users():
 
 @app.route('/v1/user/<int:Id>')
 def user(Id):
@@ -395,6 +330,7 @@ def upload_product():
 	auth_token = str(request.headers['Authorization'])[6:]
 	
 	check_auth = authenticate_user(auth_token)
+	print(check_auth)
 	
 	
 # print(check_auth)
@@ -420,6 +356,7 @@ def upload_product():
 				result=[]
 
 				records = csr.fetchall()
+				print(records)
 				for rec in records:
 					keys = [column[0] for column in csr.description]
 					values = rec
@@ -540,14 +477,30 @@ def delete_product(P_Id):
 			rec = csr.fetchone()
 
 			if check_auth != False:
+				print(u_id)
 
 				
 				if (rec is not None):
-			
-				
-				
-
-
+					print(rec)
+					image_ids = []
+					csr = mysql.cursor()
+					query = "SELECT s3_bucket_path FROM tbl_image WHERE p_id = %s"
+					field = (P_Id,)
+					csr.execute(query, field)
+					records = csr.fetchall()
+					print(records)
+					if (records is not None):
+						for row in records:
+							image_ids.append(row[0])
+							csr.close()
+							print(image_ids)
+						for image_id in image_ids:
+							s3.delete_object(Bucket=bucket_name, Key= image_id)
+						csr = mysql.cursor()
+						query = "DELETE FROM tbl_image WHERE p_id = %s"
+						field = (P_Id,)
+						csr.execute(query, field)	
+					
 					query = "DELETE FROM tbl_product where p_id =%s and u_id=%s"
 					field = (P_Id, u_id)
 					csr = mysql.cursor()
@@ -802,6 +755,7 @@ def update_product_patch(P_Id):
 
 @app.route('/v1/product/<int:P_Id>',methods=['GET'])
 def get_product(P_Id):
+	
 	if P_Id:
 
 			# dbcon = mysql.connect()
@@ -829,7 +783,381 @@ def get_product(P_Id):
 				csr.close()
 				return result
 		
+@app.route('/v1/product/<int:product_id>/image', methods=['POST'])
+def upload_image(product_id):
+	if 'files[]' not in request.files:
+		resp=jsonify({'message': 'Please provide the valid image'})
+		resp.status_code=400
+		return resp
+	files=request.files.getlist('files[]')
+	csr = None
+	csr = mysql.cursor()
+	query = "Select P_id,u_id from tbl_product where P_id=%s"
+	field = (product_id,)
+	csr.execute(query, field)
+	rec = csr.fetchone()
 	
+	csr.close()	
+	if rec==None:
+		result = jsonify("Product id Not Found", 404)
+		result.status_code = 404
+
+		return result
+	
+	db_error=False
+	auth_token = str(request.headers['Authorization'])[6:]
+	check_auth=authenticate_user(auth_token)
+	print(check_auth)
+	now = datetime.now()
+	u_update = now.strftime('%Y-%m-%dT%H:%M:%SZ')
+	file_count = len(files)
+	print (file_count)
+	try:
+		if check_auth != False:
+			u_id=check_auth
+			print(u_id)
+			for file in files:
+				if file and file_count==1:
+					# print(file)
+					filename=secure_filename(file.filename)
+					# file_names= file['FileStorage']
+					# print(file_names)
+					allowed_extensions = set(['jpg', 'jpeg', 'png','svg'])
+					if not '.' in filename or filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
+						return jsonify({'error': 'File has an invalid extension'}), 400
+   					
+					s3_path= str(uuid.uuid4())
+					print (s3_path)
+					#bucket_name='abdev1997'
+					print(bucket_name)
+					s3_bucket_path = "/"+bucket_name+"/"+s3_path+filename
+					print(s3_bucket_path)
+					
+					pathname=os.path.join("/Users/maverick1997/Documents/cloudass",filename)
+					print(pathname)
+					file.save(os.path.join("",filename))
+					print(bucket_name)
+					response= s3.upload_file(filename,bucket_name,s3_bucket_path)
+					print("incheck")
+					print(response)
+					# s3_bucket_path=f's3://bucket_name/path/to/s3/file'
+					# print(s3_bucket_path)
+					query = "INSERT INTO tbl_image(p_id,file_name,Date_created,s3_bucket_path) VALUES(%s,%s,%s,%s)"
+					field = (product_id,filename,u_update,s3_bucket_path)
+					csr = mysql.cursor()
+					csr.execute(query, field) 
+					mysql.commit()
+					csr.close()	
+					
+					csr = mysql.cursor()
+					query = "select image_id from tbl_image where Date_created = %s"
+					field = (u_update,)
+					csr.execute(query, field)
+					data_db=csr.fetchone()
+					csr.close()
+					image1_db = data_db[0]
+					print (image1_db)
+						
+					query = "SELECT image_id, p_id,file_name,Date_created, s3_bucket_path from tbl_image where image_id= %s"
+					field = (image1_db,)
+					csr = mysql.cursor()
+					csr.execute(query, field)
+					result = []
+					records = csr.fetchall()
+					print(records)
+					for rec in records:
+						keys = [column[0] for column in csr.description]
+						values = rec
+						record_dict = dict(zip(keys, values))
+						result.append(record_dict)
+					result = jsonify(result)
+					result.status_code = 201
+					csr.close()
+					return result
+					
+				else:
+					csr=mysql.cursor()
+					resp=jsonify({'message':'More than 1 file can not be uploaded'})
+					resp.status_code=400
+					csr.close()
+					return resp
+		else:
+			app.logger.error("Authorization error") 
+			resp=jsonify({'message':'Authorization Error'})
+			resp.status_code=400
+			return resp
+
+
+	
+	except Exception as e:
+		db_error=True
+		app.logger.error("file upload bad request") 
+	if db_error:
+		resp=jsonify({"Bad Request":"400"})
+		resp.status_code=400
+		return resp
+
+@app.route('/v1/product/<int:p_id>/image',methods=['GET'])
+def get_image_only(p_id):
+	csr = None
+	csr = mysql.cursor()
+	query = "Select P_id,u_id from tbl_product where P_id=%s"
+	field = (p_id,)
+	csr.execute(query, field)
+	rec = csr.fetchone()
+	
+	csr.close()	
+	if rec==None:
+		result = jsonify("Product id Not Found", 404)
+		result.status_code = 404
+
+		return result
+
+	auth_token=str(request.headers['Authorization'])[6:]
+	check_auth=authenticate_user(auth_token)
+	db_error=False
+	
+	try:
+		if check_auth != False:
+			u_id=check_auth
+			print(u_id)
+			csr = mysql.cursor(dictionary=True)
+			query = "SELECT u_id from  tbl_product where p_id= %s"  
+			field = (p_id,)
+			csr.execute(query, field)
+			record= csr.fetchall()
+			Db_id= record[0]['u_id']
+			print(Db_id)		
+			csr.close()	
+
+			if(u_id!= Db_id):
+				csr.close()			
+				resp = jsonify({"User unauthorized":'401'})
+				resp.status_code = 401
+				return resp
+			elif(record is None):
+				csr.close()
+				resp=jsonify("Bad Request",400)
+				resp.status_code=400
+				return resp
+			
+			csr = mysql.cursor()
+			query = "SELECT image_id, p_id, file_name, Date_created, s3_bucket_path from tbl_image where p_id= %s"  
+			field = (p_id,)
+			csr.execute(query, field)
+			result=[]
+			records = csr.fetchall()
+			print(records)
+			for rec in records:
+				keys = [column[0] for column in csr.description]
+				values = rec
+				record_dict = dict(zip(keys, values))
+				result.append(record_dict)
+			result = jsonify(result)
+			result.status_code = 201
+			csr.close()
+			return result
+				
+	    
+		else:
+			resp=jsonify({'Unauthorized User':'401'})
+			resp.status_code=401
+			app.logger.error("Document not fetched") 
+			return resp
+	except Exception as e:
+		db_error=True
+		app.logger.error("Document not fetched bad request")  	
+	if db_error:
+		resp=jsonify({"Bad Request":"400"})
+		resp.status_code=400
+		return resp
+  
+@app.route('/v1/product/<int:p_id>/image/<int:image_id>',methods=['GET'])
+def get_image(p_id,image_id):
+	csr = None
+	csr = mysql.cursor()
+	query = "Select P_id,u_id from tbl_product where P_id=%s"
+	field = (p_id,)
+	csr.execute(query, field)
+	rec = csr.fetchone()
+	
+	csr.close()	
+	if rec==None:
+		result = jsonify("Product id Not Found", 404)
+		result.status_code = 404
+
+		return result
+
+	csr = None
+	csr = mysql.cursor()
+	query = "Select image_id from tbl_image where image_id=%s"
+	field = (image_id,)
+	csr.execute(query, field)
+	rec = csr.fetchone()
+	
+	csr.close()	
+	if rec==None:
+		result = jsonify("Image id Not Found", 404)
+		result.status_code = 404
+
+		return result
+	
+	auth_token=str(request.headers['Authorization'])[6:]
+	check_auth=authenticate_user(auth_token)
+	db_error=False
+	
+	try:
+		if check_auth != False:
+			u_id=check_auth
+			print(u_id)
+			csr = mysql.cursor(dictionary=True)
+			query = "SELECT u_id from  tbl_product where p_id= %s"  
+			field = (p_id,)
+			csr.execute(query, field)
+			record= csr.fetchall()
+			Db_id= record[0]['u_id']
+			print(Db_id)		
+			csr.close()	
+
+			if(u_id!= Db_id):
+				csr.close()			
+				resp = jsonify({"User unauthorized":'401'})
+				resp.status_code = 401
+				return resp
+			elif(record is None):
+				csr.close()
+				resp=jsonify("Bad Request",400)
+				resp.status_code=400
+				return resp
+			
+			csr = mysql.cursor()
+			query = "SELECT image_id, p_id, file_name, Date_created, s3_bucket_path from tbl_image where p_id= %s and image_id= %s"  
+			field = (p_id,image_id,)
+			csr.execute(query, field)
+			result=[]
+			records = csr.fetchall()
+			print(records)
+			for rec in records:
+				keys = [column[0] for column in csr.description]
+				values = rec
+				record_dict = dict(zip(keys, values))
+				result.append(record_dict)
+			result = jsonify(result)
+			result.status_code = 201
+			csr.close()
+			return result
+				
+	    
+		else:
+			resp=jsonify({'Unauthorized User':'401'})
+			resp.status_code=401
+			app.logger.error("Document not fetched") 
+			return resp
+	except Exception as e:
+		db_error=True
+		app.logger.error("Document not fetched bad request")  	
+	if db_error:
+		resp=jsonify({"Bad Request":"400"})
+		resp.status_code=400
+		return resp
+
+@app.route('/v1/product/<int:product_id>/image/<int:image_id>', methods=['DELETE'])
+def image_delete(product_id, image_id):
+	csr = None
+	csr = mysql.cursor()
+	query = "Select P_id,u_id from tbl_product where P_id=%s"
+	field = (product_id,)
+	csr.execute(query, field)
+	rec = csr.fetchone()
+	
+	csr.close()	
+	if rec==None:
+		result = jsonify("Product id Not Found", 404)
+		result.status_code = 404
+
+		return result
+
+	csr = None
+	csr = mysql.cursor()
+	query = "Select image_id from tbl_image where image_id=%s"
+	field = (image_id,)
+	csr.execute(query, field)
+	rec = csr.fetchone()
+	
+	csr.close()	
+	if rec==None:
+		result = jsonify("Image id Not Found", 404)
+		result.status_code = 404
+
+		return result
+	
+	auth_token=str(request.headers['Authorization'])[6:]
+	check_auth=authenticate_user(auth_token)
+	print(check_auth)
+	# Check if the product_id parameter is valid
+    # if not product_id.isdigit():
+    #     return jsonify({'error': 'Invalid product ID'}), 400
+	
+	try:
+		if check_auth != False:
+			u_id=check_auth
+			csr = mysql.cursor()
+			query = "SELECT u_id from tbL_product where p_id= %s"
+			field = (product_id,)
+			csr.execute(query, field)
+			data=csr.fetchone()
+			u_id_db=data[0]
+			csr.close()
+			print(u_id_db)
+			key_id =str(image_id)
+			print(key_id)
+			if data is None:
+				csr.close()
+				result = jsonify({"Not found",404})
+				result.status_code = 404			
+				return result
+			if(u_id!= u_id_db):
+				csr.close()			
+				result = jsonify({"User unauthorized":'401'})
+				result.status_code = 401
+				return result
+			#bucket_name='abdev1997'
+			
+			csr = mysql.cursor()
+			query = "SELECT s3_bucket_path from tbl_image where image_id= %s"
+			field = (image_id,)
+			csr.execute(query, field)
+			data=csr.fetchone()
+			print(bucket_name)
+			key_id = data[0]
+			print(key_id)
+			s3.delete_object(Bucket=bucket_name, Key= key_id)
+			csr.close()  
+			csr=mysql.cursor()            
+			query="Delete from tbl_image where image_id=%s"
+			field=(image_id,)    
+			csr.execute(query,field)   
+			mysql.commit() 
+			result=jsonify({"No Content":"204"})
+			result.status_code=204
+			csr.close()
+			app.logger.info("User deleted successfully")
+			return result
+		else:
+			resp=jsonify({'Unauthorized User':'401'})
+			resp.status_code=401
+			app.logger.error("User not deleted")
+			return resp					
+ 
+	except Exception as e:
+		success=True
+		app.logger.error("User not deleted bad request")
+	if success:
+		resp=jsonify({"Bad Request":"400"})
+		resp.status_code=400
+		return resp
+   
+
 @app.errorhandler(404)
 def not_found(error=None):
 	message = {
@@ -850,6 +1178,9 @@ def pwd(password):
 
 
 if __name__ == "__main__":
-	app.run(host="0.0.0.0",port=5000)
+	app.run()
 
 #((str(hash_pwd)[2:].replace('\'', '') == db_pwd) and (auth_uname == db_uname))
+ # allowed_extensions = set(['jpg', 'jpeg', 'png'])
+    # if not '.' in filename or filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
+    #     return jsonify({'error': 'File has an invalid extension'}), 400
