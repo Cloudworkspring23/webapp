@@ -1094,6 +1094,27 @@ def image_delete(product_id, image_id):
 	auth_token=str(request.headers['Authorization'])[6:]
 	check_auth=authenticate_user(auth_token)
 	print(check_auth)
+	u_id=check_auth
+	csr = mysql.cursor()
+	query = "SELECT u_id from tbL_product where p_id= %s"
+	field = (product_id,)
+	csr.execute(query, field)
+	data=csr.fetchone()
+	u_id_db=data[0]
+	csr.close()
+	print(u_id_db)
+	key_id =str(image_id)
+	print(key_id)
+	if data is None:
+		csr.close()
+		result = jsonify({"Not found",404})
+		result.status_code = 404			
+		return result
+	if(u_id!= u_id_db):
+		csr.close()			
+		result = jsonify({"User unauthorized":'401'})
+		result.status_code = 401
+		return result
 	# Check if the product_id parameter is valid
     # if not product_id.isdigit():
     #     return jsonify({'error': 'Invalid product ID'}), 400
@@ -1101,26 +1122,7 @@ def image_delete(product_id, image_id):
 	try:
 		if check_auth != False:
 			u_id=check_auth
-			csr = mysql.cursor()
-			query = "SELECT u_id from tbL_product where p_id= %s"
-			field = (product_id,)
-			csr.execute(query, field)
-			data=csr.fetchone()
-			u_id_db=data[0]
-			csr.close()
-			print(u_id_db)
-			key_id =str(image_id)
-			print(key_id)
-			if data is None:
-				csr.close()
-				result = jsonify({"Not found",404})
-				result.status_code = 404			
-				return result
-			if(u_id!= u_id_db):
-				csr.close()			
-				result = jsonify({"User unauthorized":'401'})
-				result.status_code = 401
-				return result
+			
 			#bucket_name='abdev1997'
 			
 			csr = mysql.cursor()
