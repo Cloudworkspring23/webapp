@@ -16,7 +16,7 @@ echo "|                                                                         
 echo "|                                                           INSTALL SCRIPT v1.0                                                           |"
 echo "|                                                                                                                                         |"
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
-
+sudo yum Update
 # Install zip and unnzip
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 echo "|                                                                                                                                         |"
@@ -26,7 +26,7 @@ echo "+-------------------------------------------------------------------------
 sudo yum install zip -y
 sudo yum install unzip -y
 
-# Install NodeJS
+# Install Python
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 echo "|                                                                                                                                         |"
 echo "|                                                         Installing Python                                                         |"
@@ -51,19 +51,7 @@ echo "|                                                                         
 echo "|                                                         Installing MYSQL                                                           |"
 echo "|                                                                                                                                         |"
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
-sudo yum install https://dev.mysql.com/get/mysql80-community-release-el7-5.noarch.rpm -y
-sudo yum install mysql-community-server -y
-sleep 3
-echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
-echo "|                                                                                                                                         |"
-echo "|                                                     Starting the MYSQL service                                                     |"
-echo "|                                                                                                                                         |"
-echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
-sudo systemctl enable mysqld.service 
-sudo systemctl start mysqld.service
-SQL_PW=$(sudo grep 'temporary password' /var/log/mysqld.log | awk '{print $NF;}')
-echo $SQL_PW
-sudo mysql -u "root" --password="${SQL_PW}" --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'United@19';"
+
 # echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 # echo "|                                                                                                                                         |"
 # echo "|                                                     Boostrapping PostgreSQL database                                                    |"
@@ -86,7 +74,6 @@ echo "|                                                   Validating Installed P
 echo "|                                                                                                                                         |"
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 echo "python $(python3 --version)"
-echo "mys $(mysql --version)"
 echo "pip $(pip --version)"
 
 
@@ -104,6 +91,10 @@ echo "+-------------------------------------------------------------------------
 /usr/bin/pip3 install databases
 /usr/bin/pip3 install pymysql
 /usr/bin/pip3 install requests
+/usr/bin/pip3 install python-dotenv
+/usr/bin/pip3 install statsd
+/usr/bin/pip3 install http.client
+/usr/bin/pip3 install uuid
 
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 echo "|                                                                                                                                         |"
@@ -122,7 +113,3 @@ echo "+-------------------------------------------------------------------------
 cd webapp
 
 sudo mv app.service /etc/systemd/system/webapp.service
-sudo systemctl daemon-reload
-sudo systemctl enable webapp.service 
-sudo systemctl start webapp.service
-sudo systemctl status webapp.service
