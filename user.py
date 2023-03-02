@@ -1178,7 +1178,7 @@ def pwd(password):
 
 
 if __name__ == "__main__":
-	app.run()
+	app.run(host='0.0.0.0',port=5000)
 
 #((str(hash_pwd)[2:].replace('\'', '') == db_pwd) and (auth_uname == db_uname))
  # allowed_extensions = set(['jpg', 'jpeg', 'png'])
