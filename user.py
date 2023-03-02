@@ -1096,7 +1096,7 @@ def image_delete(product_id, image_id):
 	print(check_auth)
 	u_id=check_auth
 	csr = mysql.cursor()
-	query = "SELECT u_id from tbL_product where p_id= %s"
+	query = "SELECT u_id from tbl_product where p_id= %s"
 	field = (product_id,)
 	csr.execute(query, field)
 	data=csr.fetchone()
