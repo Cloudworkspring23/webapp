@@ -16,7 +16,7 @@ Clone the AWS INFRA repository and run the Terraform Command:
 1. Terraform init
 2. Terraform fmt
 3. Terraform Plan -var-file="demo.tfvars"
-4. Terraform Apply -var-file="demo.tfvars"
+4. Terraform Apply -var-file="demo.tfvars
 
 
 Call the API using Postman
