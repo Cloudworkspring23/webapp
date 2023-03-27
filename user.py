@@ -42,7 +42,7 @@ import logging
 
 s3=boto3.client('s3')
 s =b'$2b$12$5bLd8.tAyVOYX66Y2KLNROtA86OappyUFvMtpSYsMDGnH2z1HNnUO'
-# c = statsd.StatsClient('localhost',8125)
+c = statsd.StatsClient('localhost',8125)
 dotenv_path = Path("/home/ec2-user/webapp/.env")
 load_dotenv(dotenv_path=dotenv_path)
 bucket_name=os.environ.get('AWS_S3_BUCKET_NAME')
@@ -52,6 +52,7 @@ bucket_name=os.environ.get('AWS_S3_BUCKET_NAME')
 def create_user():
 	csr = None
 	db_error = False
+	c.incr("Create User")
 	try:
 		js = request.json
 		username = js['username']
@@ -103,6 +104,7 @@ def create_user():
 def user(Id):
 	# dbcon = None
 	csr = None
+	c.incr("Get User")
 	try:
 		# js = request.json
 		# Id =js['id']
@@ -184,6 +186,7 @@ def user(Id):
 # healthzz api
 @app.route("/healthz")
 def myname():
+	c.incr("healthz")
 	return jsonify({"Application is healthy": "200"})
 
 
@@ -193,6 +196,7 @@ def update_user(Id):
 	# dbcon = None
 	csr = None
 	db_error=False
+	c.incr("Update User")
 	try:
 		js = request.json
 		user_name = js['username']
@@ -322,6 +326,7 @@ def upload_product():
 	product_manufacturer = data.get("manufacturer")
 	product_quantity = data.get("quantity")
 	int(product_quantity)
+	c.incr("Create Product")
 	csr = None
 	
 
@@ -389,6 +394,7 @@ def upload_product():
 
 def authenticate_user(auth_token):
 	csr = None
+	c.incr(" Authenticate User")
 	# print("entered auth method")
 	# print(auth_token)
 	try:
@@ -446,6 +452,7 @@ def authenticate_user(auth_token):
 @app.route('/v1/product/<int:P_Id>', methods=['DELETE'])
 def delete_product(P_Id):
 	csr = None
+	c.incr("Delete Product")
 	
 	
 # errors={}
@@ -530,6 +537,7 @@ def delete_product(P_Id):
 def update_product(P_Id):
 	csr = None
 	data = request.json
+	c.incr("Update Product")
 	product_name = data.get("name")
 	product_description = data.get("description")	
 	product_sku = data.get("sku")
@@ -622,6 +630,7 @@ def update_product(P_Id):
 def update_product_patch(P_Id):
 	csr = None
 	data = request.json
+	c.incr("Update Product Patch")
 	product_name = data.get("name")
 	if product_name is None:
 		csr = mysql.cursor()
@@ -755,7 +764,7 @@ def update_product_patch(P_Id):
 
 @app.route('/v1/product/<int:P_Id>',methods=['GET'])
 def get_product(P_Id):
-	
+	c.incr("Get Product")
 	if P_Id:
 
 			# dbcon = mysql.connect()
@@ -796,6 +805,7 @@ def upload_image(product_id):
 	field = (product_id,)
 	csr.execute(query, field)
 	rec = csr.fetchone()
+	c.incr("Upload Image")
 	
 	csr.close()	
 	if rec==None:
@@ -905,6 +915,7 @@ def get_image_only(p_id):
 	field = (p_id,)
 	csr.execute(query, field)
 	rec = csr.fetchone()
+	c.incr("Get Image of Product")
 	
 	csr.close()	
 	if rec==None:
@@ -979,6 +990,7 @@ def get_image(p_id,image_id):
 	query = "Select P_id,u_id from tbl_product where P_id=%s"
 	field = (p_id,)
 	csr.execute(query, field)
+	c.incr("Get Image of that Product")
 	rec = csr.fetchone()
 	
 	csr.close()	
@@ -1069,6 +1081,7 @@ def image_delete(product_id, image_id):
 	field = (product_id,)
 	csr.execute(query, field)
 	rec = csr.fetchone()
+	c.incr("Delete Product")
 	
 	csr.close()	
 	if rec==None:

@@ -95,6 +95,8 @@ echo "+-------------------------------------------------------------------------
 /usr/bin/pip3 install statsd
 /usr/bin/pip3 install http.client
 /usr/bin/pip3 install uuid
+# install cloudwatch agent
+sudo yum install -y amazon-cloudwatch-agent 
 
 echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
 echo "|                                                                                                                                         |"
@@ -113,3 +115,15 @@ echo "+-------------------------------------------------------------------------
 cd webapp
 
 sudo mv app.service /etc/systemd/system/webapp.service
+# sudo mv /home/ec2-user/webapp/cloudwatch-config.json /opt/cloudwatch-config.json
+
+echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
+echo "|                                                                                                                                         |"
+echo "|                                                         Running Cloudwatch commands                                                     |"
+echo "|                                                                                                                                         |"
+echo "+-----------------------------------------------------------------------------------------------------------------------------------------+"
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+    -a fetch-config \
+    -m ec2 \
+    -c file:/home/ec2-user/webapp/cloudwatch-config.json \
+    -s
