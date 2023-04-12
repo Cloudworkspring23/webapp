@@ -57,13 +57,6 @@ jobs:
           echo "$AMI_ID"
           echo "ami=$AMI_ID" >> "$GITHUB_OUTPUT"
       
-  autoscaling:
-    needs: packer_build_ami
-    runs-on: ubuntu-latest
-    name: Auto scaling group launch template & instance refresh
-    
-    steps: 
-      
       - name: Step 1 - Configure AWS Credentials for Prod
         uses: aws-actions/configure-aws-credentials@v1
         with:
