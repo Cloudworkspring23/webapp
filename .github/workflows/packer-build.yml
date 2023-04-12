@@ -60,12 +60,16 @@ jobs:
         run: | 
           sudo apt-get install jq
           echo "Deploying Packer Build"
-          ASG_NAME=${{ vars.ASG_NAME }}
-          LAUNCH_CONFIG=${{ vars.LAUNCH_CONFIG }}
+          ASG_NAME=${{ secrets.ASG_NAME }}
+          LAUNCH_CONFIG=${{ secrets.LAUNCH_CONFIG }}
           IMAGE=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d':' -f2)
           IMAGE_ID=$(jq -n \
             --arg img "$IMAGE" \
             '{"ImageId": $img}')
+          echo "$LAUNCH_CONFIG"
+          echo "$IMAGE_ID"
+          echo "$ASG_NAME"
+
           aws ec2 create-launch-template-version \
             --launch-template-name "$LAUNCH_CONFIG" \
             --version-description updateAMI --source-version 1 \
