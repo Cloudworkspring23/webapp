@@ -67,6 +67,7 @@ jobs:
       - name: Step 2 - Run `Configuring the launch template` 
         id: configuring
         run: |
+          LAUNCH_CONFIG=${{ vars.LAUNCH_CONFIG }}
           aws --version
           aws ec2 describe-launch-templates
           aws ec2 create-launch-template-version  --launch-template-name "$LAUNCH_CONFIG"--version-description updateAMI --source-version 1 --launch-template-data '{"ImageId":"${{needs.packer_build_ami.outputs.ami_id}}"}' --version-description updateAMI --source-version 1 
