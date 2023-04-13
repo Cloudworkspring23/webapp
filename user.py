@@ -189,6 +189,11 @@ def myname():
 	c.incr("healthz")
 	return jsonify({"Application is healthy": "200"})
 
+@app.route("/")
+def myname():
+	c.incr("/")
+	return jsonify({"Application is healthy": "200"})
+
 
 # update api
 @app.route('/v1/user/<int:Id>', methods=['PUT'])
