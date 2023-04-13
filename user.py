@@ -43,10 +43,10 @@ import logging
 s3=boto3.client('s3')
 s =b'$2b$12$5bLd8.tAyVOYX66Y2KLNROtA86OappyUFvMtpSYsMDGnH2z1HNnUO'
 c = statsd.StatsClient('localhost',8125)
-# dotenv_path = Path("/home/ec2-user/webapp/.env")
-# load_dotenv(dotenv_path=dotenv_path)
-# bucket_name=os.environ.get('AWS_S3_BUCKET_NAME')
-bucket_name='abdev1997'
+dotenv_path = Path("/home/ec2-user/webapp/.env")
+load_dotenv(dotenv_path=dotenv_path)
+bucket_name=os.environ.get('AWS_S3_BUCKET_NAME')
+# bucket_name='abdev1997'
 
 @app.route('/v1/user', methods=['POST'])
 def create_user():
@@ -190,10 +190,9 @@ def myname():
 	return jsonify({"Application is healthy": "200"})
 
 @app.route("/")
-def myname():
-	c.incr("/")
+def mynameroot():
+	c.incr("healthz")
 	return jsonify({"Application is healthy": "200"})
-
 
 # update api
 @app.route('/v1/user/<int:Id>', methods=['PUT'])
@@ -331,8 +330,8 @@ def upload_product():
 	product_manufacturer = data.get("manufacturer")
 	product_quantity = data.get("quantity")
 	int(product_quantity)
+	c.incr("Create Product")
 	csr = None
-	c.incr("Upload product")
 	
 
 # errors={}
@@ -399,6 +398,7 @@ def upload_product():
 
 def authenticate_user(auth_token):
 	csr = None
+	c.incr(" Authenticate User")
 	# print("entered auth method")
 	# print(auth_token)
 	try:
@@ -457,6 +457,7 @@ def authenticate_user(auth_token):
 def delete_product(P_Id):
 	csr = None
 	c.incr("Delete Product")
+	
 	
 # errors={}
 	success = False
@@ -540,12 +541,13 @@ def delete_product(P_Id):
 def update_product(P_Id):
 	csr = None
 	data = request.json
+	c.incr("Update Product")
 	product_name = data.get("name")
 	product_description = data.get("description")	
 	product_sku = data.get("sku")
 	product_manufacturer = data.get("manufacturer")
 	product_quantity = data.get("quantity")
-	c.incr("Put_update_product")
+	
 	
 	
 	expected_keys = ["p_name", "description", "sku", "manufacturer", "product_quantity"]
@@ -632,7 +634,7 @@ def update_product(P_Id):
 def update_product_patch(P_Id):
 	csr = None
 	data = request.json
-	c.incr("Patch Update Product")
+	c.incr("Update Product Patch")
 	product_name = data.get("name")
 	if product_name is None:
 		csr = mysql.cursor()
@@ -766,7 +768,7 @@ def update_product_patch(P_Id):
 
 @app.route('/v1/product/<int:P_Id>',methods=['GET'])
 def get_product(P_Id):
-	c.incr("Get_Product")
+	c.incr("Get Product")
 	if P_Id:
 
 			# dbcon = mysql.connect()
@@ -840,7 +842,7 @@ def upload_image(product_id):
    					
 					s3_path= str(uuid.uuid4())
 					print (s3_path)
-					bucket_name='abdev1997'
+					#bucket_name='abdev1997'
 					print(bucket_name)
 					s3_bucket_path = "/"+bucket_name+"/"+s3_path+filename
 					print(s3_bucket_path)
@@ -917,7 +919,7 @@ def get_image_only(p_id):
 	field = (p_id,)
 	csr.execute(query, field)
 	rec = csr.fetchone()
-	c.incr("Get Product Image")
+	c.incr("Get Image of Product")
 	
 	csr.close()	
 	if rec==None:
@@ -992,8 +994,9 @@ def get_image(p_id,image_id):
 	query = "Select P_id,u_id from tbl_product where P_id=%s"
 	field = (p_id,)
 	csr.execute(query, field)
+	c.incr("Get Image of that Product")
 	rec = csr.fetchone()
-	c.incr("Get Image with image id")
+	
 	csr.close()	
 	if rec==None:
 		result = jsonify("Product id Not Found", 404)
@@ -1082,7 +1085,8 @@ def image_delete(product_id, image_id):
 	field = (product_id,)
 	csr.execute(query, field)
 	rec = csr.fetchone()
-	c.incr("Delete Image")
+	c.incr("Delete Product")
+	
 	csr.close()	
 	if rec==None:
 		result = jsonify("Product id Not Found", 404)
@@ -1109,7 +1113,7 @@ def image_delete(product_id, image_id):
 	print(check_auth)
 	u_id=check_auth
 	csr = mysql.cursor()
-	query = "SELECT u_id from tbL_product where p_id= %s"
+	query = "SELECT u_id from tbl_product where p_id= %s"
 	field = (product_id,)
 	csr.execute(query, field)
 	data=csr.fetchone()
@@ -1145,7 +1149,6 @@ def image_delete(product_id, image_id):
 			data=csr.fetchone()
 			print(bucket_name)
 			key_id = data[0]
-			
 			print(key_id)
 			s3.delete_object(Bucket=bucket_name, Key= key_id)
 			csr.close()  
@@ -1180,7 +1183,6 @@ def not_found(error=None):
 		'status': 404,
 		'message': 'Not Found: ',
 	}
-	c.incr("Api Not Found")
 	resp = jsonify(message)
 	resp.status_code = 404
 
@@ -1195,7 +1197,7 @@ def pwd(password):
 
 
 if __name__ == "__main__":
-	app.run()
+	app.run(host='0.0.0.0',port=5000)
 
 #((str(hash_pwd)[2:].replace('\'', '') == db_pwd) and (auth_uname == db_uname))
  # allowed_extensions = set(['jpg', 'jpeg', 'png'])
