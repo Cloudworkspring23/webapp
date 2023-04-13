@@ -184,9 +184,9 @@ def user(Id):
 
 
 # healthzz api
-@app.route("/health")
+@app.route("/healthz")
 def myname():
-	c.incr("health")
+	c.incr("healthz")
 	return jsonify({"Application is healthy": "200"})
 
 
