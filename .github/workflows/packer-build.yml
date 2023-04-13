@@ -84,15 +84,16 @@ jobs:
       
       - name: Step 3 - Run `Instance Refresh ` 
         id: refreshing
-        run: aws autoscaling start-instance-refresh --auto-scaling-group-name $ASG_NAME
+        run: |
+            aws autoscaling start-instance-refresh --auto-scaling-group-name $ASG_NAME
             printf "Instance refresh in progress"
             while true;
             do
               instance_refresh_status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name $ASG_NAME \
-              --query "InstanceRefreshes[0].Status" --output text)
+                --query "InstanceRefreshes[0].Status" --output text)
               if [ "$instance_refresh_status" = "Successful" ]; then
-               printf "\nInstance refresh successful!"
-               break
+                printf "\nInstance refresh successful!"
+                break
               fi
               if [ "$instance_refresh_status" = "Cancelling" ] || [ "$instance_refresh_status" = "Cancelled" ] || [ "$instance_refresh_status" = "Failed" ]; then
                 printf "\nInstance refresh failed!"
@@ -100,4 +101,4 @@ jobs:
               fi
               echo -ne "."
               sleep 10
-            done  
+            done
