@@ -100,7 +100,7 @@ def create_user():
 
 
 
-@app.route('/v1/user/<int:Id>')
+@app.route('/v2/user/<int:Id>')
 def user(Id):
 	# dbcon = None
 	csr = None
